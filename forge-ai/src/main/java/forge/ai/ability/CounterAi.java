@@ -78,8 +78,8 @@ public class CounterAi extends SpellAbilityAi {
             sa.resetTargets();
             if (sa.canTargetSpellAbility(topSA)) {
                 sa.getTargets().add(topSA);
+                tgtSA = topSA;
                 if (topSA.getPayCosts().getTotalMana() != null) {
-                    tgtSA = topSA;
                     tgtCMC = topSA.getPayCosts().getTotalMana().getCMC();
                     tgtCMC += topSA.getPayCosts().getTotalMana().countX() > 0 ? 3 : 0; // TODO: somehow determine the value of X paid and account for it?
                 }
@@ -162,6 +162,10 @@ public class CounterAi extends SpellAbilityAi {
             dontCounter = true;
         } else if (tgtCMC == 3 && !MyRandom.percentTrue(ctrChanceCMC3)) {
             dontCounter = true;
+        }
+
+        if (ComputerUtilCombo.shouldCounterSaheeliFelidarComboPiece(ai, tgtSA)) {
+            dontCounter = false;
         }
 
         // TODO check against game changers
@@ -328,6 +332,8 @@ public class CounterAi extends SpellAbilityAi {
             }
 
             if (bestOption == null) {
+                bestOption = tgtSA;
+            } else if (ComputerUtilCombo.shouldCounterSaheeliFelidarComboPiece(ai, tgtSA)) {
                 bestOption = tgtSA;
             } else {
                 // TODO Determine if this option is better than the current best option

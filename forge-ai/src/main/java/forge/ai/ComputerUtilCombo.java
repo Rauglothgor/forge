@@ -49,4 +49,43 @@ public final class ComputerUtilCombo {
                 < CardLists.filter(ai.getOpponents().getCardsIn(ZoneType.Battlefield), CardPredicates.CREATURES).size()
                         + ai.getOpponentsGreatestLifeTotal() + 10;
     }
+
+    public static Card getSaheeliFelidarDisruptionTarget(final Player ai, final Iterable<Card> choices) {
+        Card felidar = null;
+        for (final Card c : choices) {
+            if (!c.getController().isOpponentOf(ai) || !opponentHasSaheeliFelidarCombo(ai, c.getController())) {
+                continue;
+            }
+            if (SAHEELI_RAI.equals(c.getName())) {
+                return c;
+            }
+            if (felidar == null && FELIDAR_GUARDIAN.equals(c.getName())) {
+                felidar = c;
+            }
+        }
+        return felidar;
+    }
+
+    public static boolean shouldCounterSaheeliFelidarComboPiece(final Player ai, final SpellAbility spellAbility) {
+        if (spellAbility == null || !spellAbility.isSpell() || spellAbility.getHostCard() == null
+                || !spellAbility.getActivatingPlayer().isOpponentOf(ai)) {
+            return false;
+        }
+
+        final String name = spellAbility.getHostCard().getName();
+        final Player opponent = spellAbility.getActivatingPlayer();
+        if (SAHEELI_RAI.equals(name)) {
+            return !opponent.getCardsIn(ZoneType.Battlefield, FELIDAR_GUARDIAN).isEmpty();
+        }
+        if (FELIDAR_GUARDIAN.equals(name)) {
+            return !opponent.getCardsIn(ZoneType.Battlefield, SAHEELI_RAI).isEmpty();
+        }
+        return false;
+    }
+
+    private static boolean opponentHasSaheeliFelidarCombo(final Player ai, final Player opponent) {
+        return opponent.isOpponentOf(ai)
+                && !opponent.getCardsIn(ZoneType.Battlefield, SAHEELI_RAI).isEmpty()
+                && !opponent.getCardsIn(ZoneType.Battlefield, FELIDAR_GUARDIAN).isEmpty();
+    }
 }

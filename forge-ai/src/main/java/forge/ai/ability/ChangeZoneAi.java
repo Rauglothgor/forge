@@ -1109,9 +1109,14 @@ public class ChangeZoneAi extends SpellAbilityAi {
                     CardCollection originalList = new CardCollection(list);
                     boolean mustTargetFiltered = StaticAbilityMustTarget.filterMustTargetCards(ai, list, sa);
 
-                    choice = origin.contains(ZoneType.Battlefield)
-                            ? ComputerUtilCard.getBestRemovalTargetAI(ai, list)
-                            : ComputerUtilCard.getMostExpensivePermanentAI(list);
+                    if (origin.contains(ZoneType.Battlefield)) {
+                        choice = ComputerUtilCombo.getSaheeliFelidarDisruptionTarget(ai, list);
+                        if (choice == null) {
+                            choice = ComputerUtilCard.getBestRemovalTargetAI(ai, list);
+                        }
+                    } else {
+                        choice = ComputerUtilCard.getMostExpensivePermanentAI(list);
+                    }
                     if (choice.isCreature() && origin.contains(ZoneType.Graveyard)) {
                         // Karmic Guide can chain another creature
                         for (Card c : list) {
