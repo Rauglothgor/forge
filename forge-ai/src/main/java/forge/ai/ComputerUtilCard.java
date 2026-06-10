@@ -1290,6 +1290,19 @@ public class ComputerUtilCard {
             }
         }
 
+        if (landGrantingRemoval(sa) && c.isCreature()
+                && shouldHoldLandGrantingRemovalAgainstEarlyManaCreature(
+                        costRemoval,
+                        costTarget,
+                        evaluateCreature(c),
+                        c.getNetPower(),
+                        !c.getManaAbilities().isEmpty(),
+                        c.isEquipped(),
+                        c.isEnchanted(),
+                        opp.getLandsInPlay().size())) {
+            return false;
+        }
+
         //burn and curse spells
         float valueBurn = 0;
         if (dmg > 0) {
@@ -1424,6 +1437,35 @@ public class ComputerUtilCard {
         }
         final float chance = MyRandom.getRandom().nextFloat();
         return chance < valueNow;
+    }
+
+    private static boolean landGrantingRemoval(final SpellAbility sa) {
+        SpellAbility sub = sa.getSubAbility();
+        while (sub != null) {
+            if (ApiType.ChangeZone.equals(sub.getApi())
+                    && "Library".equals(sub.getParamOrDefault("Origin", ""))
+                    && "Battlefield".equals(sub.getParamOrDefault("Destination", ""))
+                    && sub.getParamOrDefault("ChangeType", "").contains("Land.Basic")
+                    && "TargetedController".equals(sub.getParamOrDefault("DefinedPlayer", ""))) {
+                return true;
+            }
+            sub = sub.getSubAbility();
+        }
+        return false;
+    }
+
+    private static boolean shouldHoldLandGrantingRemovalAgainstEarlyManaCreature(final int removalCmc,
+            final int targetCmc, final int targetEval, final int targetPower,
+            final boolean targetHasManaAbility, final boolean targetIsEquipped,
+            final boolean targetIsEnchanted, final int opponentLandCount) {
+        return removalCmc <= 2
+                && targetCmc <= 1
+                && targetEval < 175
+                && targetPower <= 1
+                && targetHasManaAbility
+                && !targetIsEquipped
+                && !targetIsEnchanted
+                && opponentLandCount <= 2;
     }
 
     /**
