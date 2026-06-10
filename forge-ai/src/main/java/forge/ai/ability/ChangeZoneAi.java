@@ -966,13 +966,8 @@ public class ChangeZoneAi extends SpellAbilityAi {
 
                     sa.getTargets().add(tobounce);
 
-                    boolean saheeliFelidarCombo = ComputerUtilAbility.getAbilitySourceName(sa).equals("Felidar Guardian")
-                            && tobounce.getName().equals("Saheeli Rai")
-                            && CardLists.filter(ai.getCardsIn(ZoneType.Battlefield), CardPredicates.nameEquals("Felidar Guardian")).size() <
-                            CardLists.filter(ai.getOpponents().getCardsIn(ZoneType.Battlefield), CardPredicates.CREATURES).size() + ai.getOpponentsGreatestLifeTotal() + 10;
-
                     // remember that the card was bounced already unless it's a special combo case
-                    if (!saheeliFelidarCombo) {
+                    if (!ComputerUtilCombo.shouldRepeatSaheeliFelidarBlink(ai, sa, tobounce)) {
                         rememberBouncedThisTurn(ai, tobounce);
                     }
 
@@ -1211,12 +1206,9 @@ public class ChangeZoneAi extends SpellAbilityAi {
         CardCollectionView aiPermanents = CardLists.filterControlledBy(list, ai);
         CardCollection aiPlaneswalkers = CardLists.filter(aiPermanents, CardPredicates.PLANESWALKERS);
 
-        // Felidar Guardian + Saheeli Rai combo support
-        if (sa.getHostCard().getName().equals("Felidar Guardian")) {
-            CardCollectionView saheeli = ai.getCardsIn(ZoneType.Battlefield, "Saheeli Rai");
-            if (!saheeli.isEmpty()) {
-                return saheeli.get(0);
-            }
+        final Card comboBlinkTarget = ComputerUtilCombo.getSaheeliFelidarBlinkTarget(ai, sa, list);
+        if (comboBlinkTarget != null) {
+            return comboBlinkTarget;
         }
 
         // Don't blink cards that will die.
