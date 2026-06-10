@@ -605,6 +605,22 @@ public class ChangeZoneAi extends SpellAbilityAi {
             return null;
         }
 
+        CardCollection castable = CardLists.filter(list,
+                c -> ComputerUtilMana.hasEnoughManaSourcesToCast(c.getFirstSpellAbility(), ai));
+        if (!castable.isEmpty()) {
+            return ComputerUtilCard.getBestCreatureAI(castable);
+        }
+
+        int manaSources = ComputerUtilMana.getAvailableManaEstimate(ai, false);
+        if (CardLists.count(ai.getCardsIn(ZoneType.Hand), CardPredicates.LANDS_PRODUCING_MANA) > 0) {
+            manaSources++;
+        }
+        final int nearTermMana = manaSources + 1;
+        CardCollection nearTerm = CardLists.filter(list, c -> c.getCMC() <= nearTermMana);
+        if (!nearTerm.isEmpty()) {
+            return ComputerUtilCard.getBestCreatureAI(nearTerm);
+        }
+
         // not urgent, get the largest creature possible
         // TODO checkETBEffects
         return ComputerUtilCard.getBestCreatureAI(list);
